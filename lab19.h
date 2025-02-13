@@ -1,3 +1,4 @@
+// Please include header (lab21.h) here.
 #include<iostream>
 #include<string>
 #include<ctime>
@@ -68,8 +69,41 @@ void Unit::newTurn(){
 /////////////////////////////////////////////////////////////////////////////////////
 //Write function members isDead(), guard(), heal(), beAttacked(), and attack() here//
 /////////////////////////////////////////////////////////////////////////////////////
+bool Unit::isDead(){
+    if(hp <= 0) return true;
+    else return false;
+}
+void Unit::guard(){
+    guard_on = true;
+}
+int Unit::beAttacked(int oppatk){
+    int damage = oppatk - def;
+    if(guard_on == false){
+        hp = hp - damage;
+        return damage;
+    }
+    else{
+        hp = hp - damage/3;
+        return damage/3;
+    }
 
 
+
+
+}
+int Unit::attack(Unit &name){
+	return name.beAttacked(atk);
+}
+int Unit :: heal(){
+    int hptemp = hp;
+    int add = rand()%21 +10;
+    hp = hp + add;
+    if(hp>=hpmax){
+        hp = hpmax;
+    }
+    
+    return hp-hptemp;
+}
 
 void drawScene(char p_action,int p,char m_action,int m){
 	cout << "                                                       \n";
@@ -79,29 +113,35 @@ void drawScene(char p_action,int p,char m_action,int m){
 	cout << "                                                       \n";	
 	}	
 	cout << "                                *               *      \n";
-	cout << "                                **  *********  **      \n";
-	cout << "                                ****         ****      \n";
+	cout << "                                *  ********  **      \n";
+	cout << "                                **         **      \n";
 	if(m_action == 'A'){
-	cout << "                 " << setw(5) << -m << "           *** **   ** ***       Attack!\n";
+	cout << "                 " << setw(5) << -m << "           *
+*   *
+*       Attack!\n";
 	}else if(m_action == 'G'){
-	cout << "                                 *** **   ** ***       Guard!\n";
+	cout << "                                 *
+*   *
+*       Guard!\n";
 	}else{
-	cout << "                                 *** **   ** ***       \n";	
+	cout << "                                 *
+*   *
+*       \n";	
 	}
-	cout << "                                  ** **   ** **        \n";
-	cout << "                   ***             *         *         \n";
+	cout << "                                  * *   * *        \n";
+	cout << "                   *             *         *         \n";
 	if(p_action == 'A'){
-	cout << "        Attack!    ***  *           *********          \n";		
+	cout << "        Attack!    *  *           *******          \n";		
 	}else if(p_action == 'H'){
-	cout << "      Heal! +" << setw(2) << p << "    ***  *           *********          \n";
+	cout << "      Heal! +" << setw(2) << p << "    *  *           *******          \n";
 	}else if(p_action == 'G'){
-	cout << "         Guard!    ***  *           *********          \n";
+	cout << "         Guard!    *  *           *******          \n";
 	}else{
-	cout << "                   ***  *           *********          \n";	
+	cout << "                   *  *           *******          \n";	
 	}
-	cout << "                    *  *       ***  *  *  *            \n";
-	cout << "                  *****           **   *   *           \n";
-	cout << "                    *                  *    ***        \n";
+	cout << "                    *  *       *  *  *  *            \n";
+	cout << "                  ***           **   *   *           \n";
+	cout << "                    *                  *    *        \n";
 	cout << "                   * *               **        *       \n";
 	cout << "                  *   *                                \n";
 	cout << "                                                       \n";
@@ -124,3 +164,52 @@ void playerLose(){
 	cout << "*                                                     *\n";
 	cout << "*******************************************************\n";
 };
+
+int main(){
+	srand(time(0));
+	Unit hero,mons;
+	hero.create("Hero");
+	mons.create("Monster");	
+	int turn_count = 1;
+	char player_action = '\0',monster_action = '\0';
+	int p = 0, m = 0;
+	while(true){
+		mons.newTurn();	
+		hero.newTurn();			
+		mons.showStatus();
+		drawScene(player_action,p,monster_action,m);
+		hero.showStatus();		
+		cout << "[A] Attack [H] Heal [G] Guard [E] Exit";
+		cout << "\n[Turn " << turn_count << "] Enter your action: ";
+		cin >> player_action;
+		player_action = toupper(player_action);
+		if(player_action == 'E') break; 
+		
+		int temp = rand()%3;
+		if(temp <= 1) monster_action = 'A';
+		else if(temp == 2) monster_action = 'G';
+		
+		if(player_action == 'G') hero.guard();
+		if(monster_action == 'G') mons.guard();
+		
+		if(player_action == 'H') p = hero.heal();
+		
+		if(player_action == 'A') p = hero.attack(mons); 
+		if(monster_action == 'A') m = mons.attack(hero); 
+		
+		if(hero.isDead()){
+			drawScene(player_action,p,monster_action,m);
+			playerLose();
+			break; 
+		}
+		
+		if(mons.isDead()){
+			drawScene(player_action,p,monster_action,m);
+			playerWin();
+			break; 
+		}
+		
+		turn_count++;
+	}
+	return 0;
+}
